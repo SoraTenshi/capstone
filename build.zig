@@ -4,7 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const shared = b.option(bool, "shared", "Build as a shared library") orelse false;
+    const linkage = b.option(std.builtin.LinkMode, "linkage", "How the library shall be linked") orelse .static;
     const strip = b.option(bool, "strip", "Omit debug information");
     const pic = b.option(bool, "pie", "Produce Position Independent Code");
 
@@ -35,10 +35,9 @@ pub fn build(b: *std.Build) void {
 
     const upstream = b.dependency("capstone", .{});
 
-    const capstone = std.Build.Step.Compile.create(b, .{
+    const capstone = b.addLibrary(.{
         .name = "capstone",
-        .kind = .lib,
-        .linkage = if (shared) .dynamic else .static,
+        .linkage = linkage,
         .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
